@@ -21,7 +21,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ./deploy.key
           sudo chmod 600 ./deploy.key
           echo "$SERVER_KNOWN_HOSTS" >> ~/.ssh/known_hosts
-          shell: bash
+        shell: bash
         env:
           SSH_PRIVATE_KEY: ${{secrets.SERVER_SSH_KEY}}
           SERVER_KNOWN_HOSTS: ${{secrets.SERVER_KNOWN_HOSTS}}
