@@ -29,15 +29,5 @@ jobs:
       - name: Install PM2
         run: npm install -g pm2
 
-      - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
-
       - name: Deploy
-        run: |
-          export PATH=$PATH:$(npm bin -g)
-          pm2 deploy ecosystem.config.cjs production
+        run: pm2 deploy ecosystem.config.cjs production
