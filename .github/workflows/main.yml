@@ -20,11 +20,11 @@ jobs:
           mkdir -p ~/.ssh/
           echo "$SSH_PRIVATE_KEY" > ./deploy.key
           sudo chmod 600 ./deploy.key
-          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-        shell: bash
+          echo "$SERVER_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          shell: bash
         env:
           SSH_PRIVATE_KEY: ${{secrets.SERVER_SSH_KEY}}
-          SSH_KNOWN_HOSTS: ${{secrets.SERVER_IP}}
+          SERVER_KNOWN_HOSTS: ${{secrets.SERVER_KNOWN_HOSTS}}
       
       - name: Install PM2
         run: npm install -g pm2
