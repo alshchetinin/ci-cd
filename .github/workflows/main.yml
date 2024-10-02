@@ -31,3 +31,10 @@ jobs:
 
       - name: Deploy
         run: pm2 deploy ecosystem.config.cjs production
+        
+      - name: Deploy
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
+          cat ecosystem.config.cjs
+          pm2 deploy ecosystem.config.cjs production --force
