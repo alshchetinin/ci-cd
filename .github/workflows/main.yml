@@ -8,59 +8,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v2
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ./deploy.key
+          sudo chmod 600 ./deploy.key
+          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{secrets.SERVER_SSH_KEY}}
+          SSH_KNOWN_HOSTS: ${{secrets.SERVER_IP}}
+      
+      - name: Install PM2
+        run: npm i pm2
 
-    - name: Use Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-
-    - name: Install dependencies
-      run: |
-        npm install -g yarn
-        yarn install --frozen-lockfile
-
-    - name: Install PM2
-      run: npm install -g pm2
-
-    - name: Setup SSH key
-      uses: webfactory/ssh-agent@v0.5.0
-      with:
-        ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
-
-    - name: Add GitHub to known_hosts
-      run: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-
-    - name: Add deployment server to known_hosts
-      run: ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-
-    - name: Check GitHub SSH access
-      run: ssh -T git@github.com || true
-
-    - name: Debug SSH connection
-      run: |
-        eval $(ssh-agent -s)
-        ssh-add -l
-        ssh -v -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
-
-    - name: Deploy with PM2
-      run: |
-        eval $(ssh-agent -s)
-        ssh-add - <<< "${{ secrets.SERVER_SSH_KEY }}"
-        pm2 deploy ecosystem.config.cjs production --debug
-
-    - name: Check PM2 status
-      if: success()
-      run: |
-        eval $(ssh-agent -s)
-        ssh-add - <<< "${{ secrets.SERVER_SSH_KEY }}"
-        ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} 'pm2 list'
-
-    - name: Debug if failed
-      if: failure()
-      run: |
-        eval $(ssh-agent -s)
-        ssh-add - <<< "${{ secrets.SERVER_SSH_KEY }}"
-        echo "Deployment failed. Here's some debug information:"
-        ssh -v -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} 'ls -la /var/www/nuxt-app; cat /var/www/nuxt-app/current/ecosystem.config.cjs || echo "File not found"'
+      - name: Deploy
+        run: pm2 deploy ecosystem.config.cjs production
