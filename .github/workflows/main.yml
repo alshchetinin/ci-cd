@@ -8,22 +8,61 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-    - name: Install Yarn
-      run: npm install -g yarn
-    - name: Install PM2
-      run: yarn global add pm2
+
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      run: |
+        npm install -g yarn
+        yarn install --frozen-lockfile
+
+    - name: Install PM2
+      run: npm install -g pm2
+
     - name: Setup SSH key
       uses: webfactory/ssh-agent@v0.5.0
       with:
         ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
-    - name: Add known hosts
+
+    - name: Add GitHub to known_hosts
+      run: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+    - name: Add deployment server to known_hosts
       run: ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+    - name: Check GitHub SSH access
+      run: ssh -T git@github.com || true
+
+    - name: Debug SSH connection
+      run: |
+        ssh-add -l
+        ssh -v root@${{ secrets.SERVER_IP }} exit
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
+
     - name: Deploy with PM2
-      run: pm2 deploy ecosystem.config.cjs production
+      run: |
+        pm2 deploy ecosystem.config.cjs production --debug
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
+        CI: true
+
+    - name: Check PM2 status
+      if: success()
+      run: |
+        ssh root@${{ secrets.SERVER_IP }} 'pm2 list'
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
+
+    - name: Debug if failed
+      if: failure()
+      run: |
+        echo "Deployment failed. Here's some debug information:"
+        ssh -v root@${{ secrets.SERVER_IP }} 'ls -la /var/www/nuxt-app; cat /var/www/nuxt-app/current/ecosystem.config.cjs'
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
