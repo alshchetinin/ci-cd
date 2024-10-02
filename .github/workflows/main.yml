@@ -20,12 +20,20 @@ jobs:
           mkdir -p ~/.ssh/
           echo "$SSH_PRIVATE_KEY" > ./deploy.key
           sudo chmod 600 ./deploy.key
+          sudo chown $USER:$USER ./deploy.key
           echo "$SERVER_KNOWN_HOSTS" >> ~/.ssh/known_hosts
         shell: bash
         env:
           SSH_PRIVATE_KEY: ${{secrets.SERVER_SSH_KEY}}
           SERVER_KNOWN_HOSTS: ${{secrets.SERVER_KNOWN_HOSTS}}
-      
+          
+      - name: Test SSH connection
+        run: ssh -i ./deploy.key -o StrictHostKeyChecking=no root@195.133.27.24 echo "SSH connection successful"
+        
+      - name: Debug SSH
+        run: |
+          ssh -vvv -i ./deploy.key root@195.133.27.24
+        
       - name: Install PM2
         run: npm install -g pm2
         
