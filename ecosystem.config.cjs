@@ -16,7 +16,7 @@ module.exports = {
       path: "/var/www/nuxt-app",
       "pre-deploy-local": "",
       "post-deploy":
-        "yarn install && yarn build && pm2 delete nuxt-app || true && pm2 start ecosystem.config.js --env production",
+        "yarn install && yarn build && pm2 delete nuxt-app || true && pm2 start ecosystem.config.cjs --env production",
       "pre-setup": "",
     },
   },
