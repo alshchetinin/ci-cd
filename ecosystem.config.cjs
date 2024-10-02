@@ -12,7 +12,7 @@ module.exports = {
       user: "root",
       host: "195.133.27.24",
       ref: "origin/main",
-      repo: "git@github.com:alshchetinin/tvorchewstvo-form.git",
+      repo: "git@github.com:alshchetinin/ci-cd.git",
       path: "/var/www/nuxt-app",
       "pre-deploy-local": "",
       "post-deploy":
