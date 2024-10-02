@@ -40,29 +40,27 @@ jobs:
 
     - name: Debug SSH connection
       run: |
+        eval $(ssh-agent -s)
         ssh-add -l
         ssh -v root@${{ secrets.SERVER_IP }} exit
-      env:
-        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
 
     - name: Deploy with PM2
       run: |
+        eval $(ssh-agent -s)
+        ssh-add - <<< "${{ secrets.SERVER_SSH_KEY }}"
         pm2 deploy ecosystem.config.cjs production --debug
-      env:
-        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
-        CI: true
 
     - name: Check PM2 status
       if: success()
       run: |
+        eval $(ssh-agent -s)
+        ssh-add - <<< "${{ secrets.SERVER_SSH_KEY }}"
         ssh root@${{ secrets.SERVER_IP }} 'pm2 list'
-      env:
-        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
 
     - name: Debug if failed
       if: failure()
       run: |
+        eval $(ssh-agent -s)
+        ssh-add - <<< "${{ secrets.SERVER_SSH_KEY }}"
         echo "Deployment failed. Here's some debug information:"
         ssh -v root@${{ secrets.SERVER_IP }} 'ls -la /var/www/nuxt-app; cat /var/www/nuxt-app/current/ecosystem.config.cjs'
-      env:
-        SSH_AUTH_SOCK: /tmp/ssh-XXX/agent.XXX
