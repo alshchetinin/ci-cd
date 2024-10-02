@@ -35,10 +35,11 @@ jobs:
           ssh -vvv -i ./deploy.key root@195.133.27.24
         
       - name: Install PM2
-        run: npm install -g pm2
+        run: npm install -g pm2 
         
       - name: Deploy
         run: |
+          run: ssh -i ./deploy.key -o StrictHostKeyChecking=no root@195.133.27.24 echo "SSH connection successful"
           echo "Current directory: $(pwd)"
           ls -la
           cat ecosystem.config.cjs
