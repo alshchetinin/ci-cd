@@ -39,8 +39,4 @@ jobs:
         
       - name: Deploy
         run: |
-          run: ssh -i ./deploy.key -o StrictHostKeyChecking=no root@195.133.27.24 echo "SSH connection successful"
-          echo "Current directory: $(pwd)"
-          ls -la
-          cat ecosystem.config.cjs
-          pm2 deploy ecosystem.config.cjs production --force
+          ssh -i ./deploy.key -o StrictHostKeyChecking=no root@195.133.27.24 "cd /var/www/nuxt-app && pm2 deploy ecosystem.config.cjs production --force"
